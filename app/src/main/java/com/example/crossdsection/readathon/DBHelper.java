@@ -1,4 +1,9 @@
+package com.example.crossdsection.readathon;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -8,6 +13,13 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import java.net.URL;
 
 /**
  * Created by crossdsection on 9/12/17.
@@ -23,6 +35,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        db = getWritableDatabase();
         // TODO Auto-generated method stub
         db.execSQL(
                 "create table levels " +
@@ -99,25 +112,76 @@ public class DBHelper extends SQLiteOpenHelper {
                         "created text, " +
                         "modified text )"
         );
+        Log.i("Successfully DB Created", "truth");
+        insertData();
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // TODO Auto-generated method stub
+        // user levels questiontypes questions answers submitted_answers story_illustration question_illustration
+        db.execSQL("DROP TABLE IF EXISTS user");
         db.execSQL("DROP TABLE IF EXISTS stories");
+        db.execSQL("DROP TABLE IF EXISTS questiontypes");
+        db.execSQL("DROP TABLE IF EXISTS answers");
+        db.execSQL("DROP TABLE IF EXISTS submitted_answers");
+        db.execSQL("DROP TABLE IF EXISTS story_illustration");
+        db.execSQL("DROP TABLE IF EXISTS question_illustration");
         onCreate(db);
     }
 
-    public boolean insertStories (String name, String phone, String email, String street, String place) {
-        SQLiteDatabase db = this.getWritableDatabase();
-//        ContentValues contentValues = new ContentValues();
-//        contentValues.put("name", name);
-//        contentValues.put("phone", phone);
-//        contentValues.put("email", email);
-//        contentValues.put("street", street);
-//        contentValues.put("place", place);
-//        db.insert("contacts", null, contentValues);
-        return true;
+    public static JSONObject getJSONObjectFromURL(String urlString) throws IOException, JSONException {
+        try {
+            URL url = new URL( urlString );
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            try {
+                BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+                StringBuilder sb = new StringBuilder();
+
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line + "\n");
+                }
+                br.close();
+
+                String jsonString = sb.toString();
+//                Log.i( jsonString );
+
+                return new JSONObject(jsonString);
+            }
+            finally{
+                urlConnection.disconnect();
+            }
+        }
+        catch(Exception e) {
+            Log.e("ERROR", e.getMessage(), e);
+            return null;
+        }
+    }
+
+    public boolean insertData () {
+        try {
+            try {
+                JSONObject object = getJSONObjectFromURL( "https://my-json-server.typicode.com/crossdsection/crossdsection.github.io/db" );
+                SQLiteDatabase db = this.getWritableDatabase();
+//                ContentValues contentValues = new ContentValues();
+//                contentValues.put("name", name);
+//                contentValues.put("phone", phone);
+//                contentValues.put("email", email);
+//                contentValues.put("street", street);
+//                contentValues.put("place", place);
+//                db.insert("contacts", null, contentValues);
+                return true;
+            }
+            catch(Exception e) {
+                Log.e("ERROR", e.getMessage(), e);
+                return false;
+            }
+        }
+        catch(Exception e) {
+            Log.e("ERROR", e.getMessage(), e);
+            return false;
+        }
     }
 
     public Cursor getData(int id) {
