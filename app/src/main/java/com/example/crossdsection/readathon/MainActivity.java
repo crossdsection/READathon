@@ -4,10 +4,14 @@ import com.example.crossdsection.readathon.DBHelper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     DBHelper db;
+
+    Button btnLevel1, btnLevel2, btnLevel3, btnLevel4, btnLevel5;
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -23,6 +27,18 @@ public class MainActivity extends AppCompatActivity {
         db.getWritableDatabase();
 
         Log.d("mylog", " LOG WORKS ");
+
+        btnLevel1 = findViewById(R.id.btn_level1);
+        btnLevel2 = findViewById(R.id.btn_level2);
+        btnLevel3 = findViewById(R.id.btn_level3);
+        btnLevel4 = findViewById(R.id.btn_level4);
+        btnLevel5 = findViewById(R.id.btn_level5);
+
+        btnLevel1.setOnClickListener(this);
+        btnLevel2.setOnClickListener(this);
+        btnLevel3.setOnClickListener(this);
+        btnLevel4.setOnClickListener(this);
+        btnLevel5.setOnClickListener(this);
     }
 
     /** Called when the activity is about to become visible. */
@@ -53,5 +69,48 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.btn_level1 :
+                btnLevel1.setVisibility(View.VISIBLE);
+                btnLevel2.setVisibility(View.GONE);
+                btnLevel3.setVisibility(View.GONE);
+                btnLevel4.setVisibility(View.GONE);
+                btnLevel5.setVisibility(View.GONE);
+                break;
+            case R.id.btn_level2 :
+                btnLevel2.setVisibility(View.VISIBLE);
+                btnLevel1.setVisibility(View.GONE);
+                btnLevel3.setVisibility(View.GONE);
+                btnLevel4.setVisibility(View.GONE);
+                btnLevel5.setVisibility(View.GONE);
+                break;
+            case R.id.btn_level3 :
+                btnLevel3.setVisibility(View.VISIBLE);
+                btnLevel2.setVisibility(View.GONE);
+                btnLevel1.setVisibility(View.GONE);
+                btnLevel4.setVisibility(View.GONE);
+                btnLevel5.setVisibility(View.GONE);
+                break;
+            case R.id.btn_level4 :
+                btnLevel4.setVisibility(View.VISIBLE);
+                btnLevel2.setVisibility(View.GONE);
+                btnLevel3.setVisibility(View.GONE);
+                btnLevel1.setVisibility(View.GONE);
+                btnLevel5.setVisibility(View.GONE);
+                break;
+            case R.id.btn_level5 :
+                btnLevel5.setVisibility(View.VISIBLE);
+                btnLevel2.setVisibility(View.GONE);
+                btnLevel3.setVisibility(View.GONE);
+                btnLevel4.setVisibility(View.GONE);
+                btnLevel1.setVisibility(View.GONE);
+                break;
+
+
+        }
     }
 }
