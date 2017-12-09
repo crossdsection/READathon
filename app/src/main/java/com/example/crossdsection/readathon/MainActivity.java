@@ -3,6 +3,7 @@ package com.example.crossdsection.readathon;
 import com.example.crossdsection.readathon.DBHelper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -10,10 +11,18 @@ public class MainActivity extends AppCompatActivity {
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
+        Log.d("mylog", " LOG WORKS ");
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Log.d("mylog", " LOG WORKS ");
+
         db = new DBHelper(getApplicationContext());
+        db.getWritableDatabase();
+
+        Log.d("mylog", " LOG WORKS ");
     }
 
     /** Called when the activity is about to become visible. */

@@ -35,7 +35,9 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db = getWritableDatabase();
+
+        Log.d("mylog", " DBWORKS ");
+
         // TODO Auto-generated method stub
         db.execSQL(
                 "create table levels " +
@@ -164,13 +166,12 @@ public class DBHelper extends SQLiteOpenHelper {
             try {
                 JSONObject object = getJSONObjectFromURL( "https://my-json-server.typicode.com/crossdsection/crossdsection.github.io/db" );
                 SQLiteDatabase db = this.getWritableDatabase();
-//                ContentValues contentValues = new ContentValues();
-//                contentValues.put("name", name);
-//                contentValues.put("phone", phone);
-//                contentValues.put("email", email);
-//                contentValues.put("street", street);
-//                contentValues.put("place", place);
-//                db.insert("contacts", null, contentValues);
+                ContentValues contentValues = new ContentValues();
+                contentValues.put("story", "People ke pateele mein papeete ka achaar");
+                contentValues.put("level_id", 0);
+                contentValues.put("created", "2016-08-1");
+                contentValues.put("modified", "2016-08-1");
+                db.insert("stories", null, contentValues);
                 return true;
             }
             catch(Exception e) {
