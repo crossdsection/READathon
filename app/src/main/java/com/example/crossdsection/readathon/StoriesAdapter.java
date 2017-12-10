@@ -8,7 +8,7 @@ import android.widget.BaseAdapter;
  * Created by chitra on 10/12/17.
  */
 
-public class MainAdapter extends BaseAdapter {
+public class StoriesAdapter extends BaseAdapter {
     @Override
     public int getCount() {
         return 0;

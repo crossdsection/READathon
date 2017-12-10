@@ -146,7 +146,7 @@ public class DBHelper extends SQLiteOpenHelper {
         JSONObject object = new JSONObject( data );
         JSONObject user = (JSONObject) object.get("user");
         JSONArray questiontypes = (JSONArray) object.get("questiontypes");
-        JSONArray contents = (JSONArray) object.get("contents");
+        JSONArray contents = (JSONArray) object.get("content");
 
         for( int i=0; i < contents.length(); i++ ){
             JSONObject storyObj = contents.getJSONObject(i);
@@ -159,7 +159,7 @@ public class DBHelper extends SQLiteOpenHelper {
             storyValues.put( "level_id", (int) storyObj.get("level_id"));
             storyValues.put( "created", getDateTime() );
             storyValues.put( "modified", getDateTime());
-
+            db.insert("stories", null, storyValues );
         }
 
         ContentValues userValues = new ContentValues();
@@ -184,7 +184,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public Cursor getData(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res =  db.rawQuery( "select * from stories where id="+id+"", null );
+        Cursor res =  db.rawQuery( "select * from stories where level_id = " + id + "", null );
         return res;
     }
 

@@ -1,15 +1,11 @@
 package com.example.crossdsection.readathon;
 
-import com.example.crossdsection.readathon.DBHelper;
-import com.facebook.stetho.Stetho;
-
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import com.example.crossdsection.readathon.ApiGetStories;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     DBHelper db;
@@ -22,7 +18,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Stetho.initializeWithDefaults(this);
+        //Stetho.initializeWithDefaults(this);
 
         db = new DBHelper(getApplicationContext());
         db.getWritableDatabase();
@@ -81,6 +77,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 btnLevel3.setVisibility(View.GONE);
                 btnLevel4.setVisibility(View.GONE);
                 btnLevel5.setVisibility(View.GONE);
+
+                goToStoryScreen(1);
                 break;
             case R.id.btn_level2 :
                 btnLevel2.setVisibility(View.VISIBLE);
@@ -110,8 +108,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 btnLevel4.setVisibility(View.GONE);
                 btnLevel1.setVisibility(View.GONE);
                 break;
-
-
         }
     }
+
+    public void goToStoryScreen(int level){
+        Intent intent = new Intent(this, StoriesActivity.class);
+        intent.putExtra("level", level);
+        startActivity(intent);
+    }
+
 }
