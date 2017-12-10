@@ -1,21 +1,18 @@
 package com.example.crossdsection.readathon;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Response;
 import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-
-import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.lang.reflect.Method;
-
+import com.example.crossdsection.readathon.DBHelper;
 import static com.android.volley.Request.Method.GET;
 import static com.example.crossdsection.readathon.ConstantApi.getStories;
 
@@ -30,24 +27,29 @@ public class ApiGetStories {
     private final String TAG = "ApiGetStories";
 
 
-    public ApiGetStories(Context mContext){
+    public ApiGetStories(Context mContext, SQLiteDatabase db ){
         this.mContext = mContext;
     }
 
     //get Stories from server
-    public void getStories(){
+    public void getData( final SQLiteDatabase db  ){
         JsonObjectRequest req = new JsonObjectRequest(GET, strUrl, null,
-                new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                System.out.println(response);
+            new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    try {
+                        DBHelper.insertData( db, response.toString() );
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e(TAG, error.getLocalizedMessage());
+                }
             }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.getLocalizedMessage());
-            }
-        });
+        );
 
         int socketTimeout = 60000;// 30 seconds - change to what you want
         RetryPolicy policy = new DefaultRetryPolicy(socketTimeout,

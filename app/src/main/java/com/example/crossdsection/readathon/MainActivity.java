@@ -1,12 +1,15 @@
 package com.example.crossdsection.readathon;
 
 import com.example.crossdsection.readathon.DBHelper;
+import com.facebook.stetho.Stetho;
+
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.example.crossdsection.readathon.ApiGetStories;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     DBHelper db;
@@ -16,17 +19,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
-        Log.d("mylog", " LOG WORKS ");
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Log.d("mylog", " LOG WORKS ");
+        Stetho.initializeWithDefaults(this);
 
         db = new DBHelper(getApplicationContext());
         db.getWritableDatabase();
-
-        Log.d("mylog", " LOG WORKS ");
+        ApiGetStories newApi = new ApiGetStories( getApplicationContext(), db.getWritableDatabase() );
+        newApi.getData( db.getWritableDatabase() );
 
         btnLevel1 = findViewById(R.id.btn_level1);
         btnLevel2 = findViewById(R.id.btn_level2);

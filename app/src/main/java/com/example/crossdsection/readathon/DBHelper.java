@@ -1,10 +1,8 @@
 package com.example.crossdsection.readathon;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import android.content.ContentValues;
@@ -15,11 +13,15 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.net.URL;
+import java.util.Locale;
 
 /**
  * Created by crossdsection on 9/12/17.
@@ -56,7 +58,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 "create table stories (" +
                             "id integer primary key, " +
                             "story text, " +
-                            "level_id text, " +
+                            "level_id integer, " +
                             "created text, " +
                             "modified text )"
         );
@@ -64,7 +66,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 "create table questiontypes (" +
                             "id integer primary key, " +
                             "questiontype text, " +
-                            "is_active bool, " +
+//                            "is_active bool, " +
                             "created text, " +
                             "modified text )"
         );
@@ -114,8 +116,7 @@ public class DBHelper extends SQLiteOpenHelper {
                         "created text, " +
                         "modified text )"
         );
-        Log.i("Successfully DB Created", "truth");
-        insertData();
+        Log.d("Successfully DB Created", "truth");
     }
 
     @Override
@@ -132,57 +133,53 @@ public class DBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public static JSONObject getJSONObjectFromURL(String urlString) throws IOException, JSONException {
-        try {
-            URL url = new URL( urlString );
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            try {
-                BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
-                StringBuilder sb = new StringBuilder();
-
-                String line;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line + "\n");
-                }
-                br.close();
-
-                String jsonString = sb.toString();
-//                Log.i( jsonString );
-
-                return new JSONObject(jsonString);
-            }
-            finally{
-                urlConnection.disconnect();
-            }
-        }
-        catch(Exception e) {
-            Log.e("ERROR", e.getMessage(), e);
-            return null;
-        }
+    private static String getDateTime() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                "yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        Date date = new Date();
+        return dateFormat.format(date);
     }
 
-    public boolean insertData () {
-        try {
-            try {
-                JSONObject object = getJSONObjectFromURL( "https://my-json-server.typicode.com/crossdsection/crossdsection.github.io/db" );
-                SQLiteDatabase db = this.getWritableDatabase();
-                ContentValues contentValues = new ContentValues();
-                contentValues.put("story", "People ke pateele mein papeete ka achaar");
-                contentValues.put("level_id", 0);
-                contentValues.put("created", "2016-08-1");
-                contentValues.put("modified", "2016-08-1");
-                db.insert("stories", null, contentValues);
-                return true;
-            }
-            catch(Exception e) {
-                Log.e("ERROR", e.getMessage(), e);
-                return false;
-            }
+    public static boolean insertData ( SQLiteDatabase db, String data ) throws JSONException, ParseException {
+
+        JSONParser parser = new JSONParser();
+        JSONObject object = new JSONObject( data );
+        JSONObject user = (JSONObject) object.get("user");
+        JSONArray questiontypes = (JSONArray) object.get("questiontypes");
+        JSONArray contents = (JSONArray) object.get("contents");
+
+        for( int i=0; i < contents.length(); i++ ){
+            JSONObject storyObj = contents.getJSONObject(i);
+            JSONArray questions = (JSONArray) storyObj.get("questions");
+            JSONArray storyIllus = (JSONArray) storyObj.get("images");
+
+            ContentValues storyValues = new ContentValues();
+            storyValues.put( "id", i);
+            storyValues.put( "story", (String) storyObj.get("story"));
+            storyValues.put( "level_id", (int) storyObj.get("level_id"));
+            storyValues.put( "created", getDateTime() );
+            storyValues.put( "modified", getDateTime());
+
         }
-        catch(Exception e) {
-            Log.e("ERROR", e.getMessage(), e);
-            return false;
+
+        ContentValues userValues = new ContentValues();
+        userValues.put( "id", (Integer) user.get("id"));
+        userValues.put( "name", (String) user.get("name"));
+        userValues.put( "score", (Integer) user.get("score"));
+        userValues.put( "level_id", (Integer) user.get("level_id"));
+        userValues.put( "created", (Integer) user.get("created"));
+        userValues.put( "modified", (Integer) user.get("modified"));
+        db.insert("users", null, userValues );
+
+        ContentValues questionTypeValues = new ContentValues();
+        for (int i = 0; i < questiontypes.length(); i++) {
+            questionTypeValues.put( "id", i );
+            questionTypeValues.put( "questiontype", (String)questiontypes.get(i) );
+            questionTypeValues.put( "created", getDateTime() );
+            questionTypeValues.put( "modified", getDateTime() );
+            db.insert("questiontypes", null, questionTypeValues );
         }
+        return true;
     }
 
     public Cursor getData(int id) {
@@ -191,30 +188,6 @@ public class DBHelper extends SQLiteOpenHelper {
         return res;
     }
 
-//    public int numberOfRows(){
-//        SQLiteDatabase db = this.getReadableDatabase();
-//        int numRows = (int) DatabaseUtils.queryNumEntries(db, CONTACTS_TABLE_NAME);
-//        return numRows;
-//    }
-
-    public boolean updateContact (Integer id, String name, String phone, String email, String street,String place) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-//        contentValues.put("name", name);
-//        contentValues.put("phone", phone);
-//        contentValues.put("email", email);
-//        contentValues.put("street", street);
-//        contentValues.put("place", place);
-//        db.update("contacts", contentValues, "id = ? ", new String[] { Integer.toString(id) } );
-        return true;
-    }
-
-//    public Integer deleteContact (Integer id) {
-//        SQLiteDatabase db = this.getWritableDatabase();
-//        return db.delete("contacts",
-//                "id = ? ",
-//                new String[] { Integer.toString(id) });
-//    }
 
 //    public ArrayList<String> getAllCotacts() {
 //        ArrayList<String> array_list = new ArrayList<String>();
