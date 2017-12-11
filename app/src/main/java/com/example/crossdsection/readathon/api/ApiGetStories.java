@@ -1,4 +1,4 @@
-package com.example.crossdsection.readathon;
+package com.example.crossdsection.readathon.api;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -10,11 +10,11 @@ import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import org.json.JSONException;
+
 import org.json.JSONObject;
-import com.example.crossdsection.readathon.DBHelper;
+import com.example.crossdsection.readathon.database.DBHelper;
 import static com.android.volley.Request.Method.GET;
-import static com.example.crossdsection.readathon.ConstantApi.getStories;
+import static com.example.crossdsection.readathon.constant.ConstantApi.getStories;
 
 /**
  * Created by chitra on 10/12/17.

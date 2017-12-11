@@ -1,4 +1,4 @@
-package com.example.crossdsection.readathon;
+package com.example.crossdsection.readathon.model;
 
 /**
  * Created by crossdsection on 10/12/17.

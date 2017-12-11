@@ -1,26 +1,32 @@
-package com.example.crossdsection.readathon;
+package com.example.crossdsection.readathon.activities;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.example.crossdsection.readathon.R;
+import com.example.crossdsection.readathon.database.DBHelper;
+import com.example.crossdsection.readathon.model.Stories;
 
-public class StoriesActivity extends AppCompatActivity {
+public class StoriesActivity extends BaseActivity implements View.OnClickListener{
 
     DBHelper db;
     int level;
 
     TextView storyTv;
+    Button questionBtn;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stories);
 
         storyTv = findViewById(R.id.storyTv);
+        questionBtn = findViewById(R.id.questionBtn);
 
         db = new DBHelper(getApplicationContext());
         level = getIntent().getIntExtra("level", 1);
@@ -38,5 +44,11 @@ public class StoriesActivity extends AppCompatActivity {
             }
 
         }
+    }
+
+    @Override
+    public void onClick(View view) {
+        Intent intent = new Intent(mActivity, QuestionActivity.class);
+        startActivity(intent);
     }
 }

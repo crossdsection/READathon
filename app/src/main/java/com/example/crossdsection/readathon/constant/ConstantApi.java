@@ -1,4 +1,4 @@
-package com.example.crossdsection.readathon;
+package com.example.crossdsection.readathon.constant;
 
 /**
  * Created by chitra on 10/12/17.
