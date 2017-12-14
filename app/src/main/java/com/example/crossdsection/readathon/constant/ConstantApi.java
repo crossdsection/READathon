@@ -6,5 +6,5 @@ package com.example.crossdsection.readathon.constant;
 
 public class ConstantApi {
     public static final String BASE_URL = "";
-    public static final String getStories = "https://my-json-server.typicode.com/crossdsection/crossdsection.github.io/db";
+    public static final String getStories = "https://rawgit.com/crossdsection/crossdsection.github.io/master/db.json";
 }

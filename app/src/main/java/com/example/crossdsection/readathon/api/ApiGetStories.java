@@ -38,7 +38,8 @@ public class ApiGetStories {
                 @Override
                 public void onResponse(JSONObject response) {
                     try {
-                        DBHelper.insertData( db, response.toString() );
+                        DBHelper obj = new DBHelper( mContext );
+                        obj.insertData( db, response.toString() );
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

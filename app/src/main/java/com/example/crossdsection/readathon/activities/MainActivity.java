@@ -9,6 +9,7 @@ import android.widget.Button;
 import com.example.crossdsection.readathon.R;
 import com.example.crossdsection.readathon.api.ApiGetStories;
 import com.example.crossdsection.readathon.database.DBHelper;
+//import com.facebook.stetho.Stetho;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener{
 
@@ -22,7 +23,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //Stetho.initializeWithDefaults(this);
+//        Stetho.initializeWithDefaults(this);
 
         db = new DBHelper(getApplicationContext());
         db.getWritableDatabase();
