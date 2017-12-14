@@ -34,7 +34,7 @@ public class StoriesActivity extends BaseActivity implements View.OnClickListene
     }
 
     public void getDataForLevels(int level){
-        Cursor cursor = db.getData( "story", level );
+        Cursor cursor = db.getData( "stories", level );
 
         while(cursor != null && cursor.moveToNext()){
             if(level == cursor.getInt(cursor.getColumnIndex("level_id"))) {
