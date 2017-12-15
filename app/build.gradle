@@ -31,4 +31,6 @@ dependencies {
     //If you want to add a network helper
     compile 'com.facebook.stetho:stetho-okhttp:1.5.0'
     compile 'com.googlecode.json-simple:json-simple:1.1'
+    compile 'com.android.support:recyclerview-v7:26.1.0'
+    compile 'com.github.bumptech.glide:glide:3.7.0'
 }

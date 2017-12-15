@@ -38,7 +38,8 @@ public class Contract {
 
     public static class Questions implements BaseColumns {
         public static final String TABLE_NAME = "questions";
-        public static final String COLUMN_ID = "question_id";
+        public static final String COLUMN_ID = "id";
+        public static final String COLUMN_QUESTION_ID = "question_id";
         public static final String COLUMN_ANSWER_KEYWORD = "answer_keyword";
         public static final String COLUMN_QUESTION = "question";
         public static final String COLUMN_QUESTION_TYPE_ID = "questiontype_id";
@@ -51,6 +52,7 @@ public class Contract {
         public static final String COLUMN_ANSWER= "answer";
         public static final String COLUMN_IS_CORRECT = "is_correct";
         public static final String COLUMN_QUESTION_ID = "question_id";
+        public static final String COLUMN_STORY_ID = "story_id";
     }
 
     public static class SubmittedAnswers implements BaseColumns {
@@ -60,6 +62,7 @@ public class Contract {
         public static final String COLUMN_IS_CORRECT = "is_correct";
         public static final String COLUMN_QUESTION_ID = "question_id";
         public static final String COLUMN_USER_ID = "user_id";
+        public static final String COLUMN_STORY_ID = "story_id";
     }
 
     public static class StoryIllustration implements BaseColumns {

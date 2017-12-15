@@ -3,19 +3,30 @@ package com.example.crossdsection.readathon.activities;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.example.crossdsection.readathon.R;
+import com.example.crossdsection.readathon.Readathon;
+import com.example.crossdsection.readathon.adapters.MainAdapter;
 import com.example.crossdsection.readathon.api.ApiGetStories;
+import com.example.crossdsection.readathon.constant.Constants;
 import com.example.crossdsection.readathon.database.DBHelper;
+import com.example.crossdsection.readathon.listeners.ClickListener;
+import com.example.crossdsection.readathon.listeners.Listener_Success;
+import com.example.crossdsection.readathon.listeners.RecyclerTouchListener;
 //import com.facebook.stetho.Stetho;
 
-public class MainActivity extends BaseActivity implements View.OnClickListener{
+public class MainActivity extends BaseActivity implements View.OnClickListener, Listener_Success {
 
     DBHelper db;
-
-    Button btnLevel1, btnLevel2, btnLevel3, btnLevel4, btnLevel5;
+    ProgressBar progressBar;
+    RecyclerView recyclerView;
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -24,23 +35,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         setContentView(R.layout.activity_main);
 
 //        Stetho.initializeWithDefaults(this);
+        progressBar = findViewById(R.id.progressBar);
+        recyclerView = findViewById(R.id.recyclerView);
 
         db = new DBHelper(getApplicationContext());
         db.getWritableDatabase();
-        ApiGetStories newApi = new ApiGetStories( getApplicationContext(), db.getWritableDatabase() );
+        db.deleteTables();
+
+        ApiGetStories newApi = new ApiGetStories(getApplicationContext(), this);
         newApi.getData( db.getWritableDatabase() );
 
-        btnLevel1 = findViewById(R.id.btn_level1);
-        btnLevel2 = findViewById(R.id.btn_level2);
-        btnLevel3 = findViewById(R.id.btn_level3);
-        btnLevel4 = findViewById(R.id.btn_level4);
-        btnLevel5 = findViewById(R.id.btn_level5);
-
-        btnLevel1.setOnClickListener(this);
-        btnLevel2.setOnClickListener(this);
-        btnLevel3.setOnClickListener(this);
-        btnLevel4.setOnClickListener(this);
-        btnLevel5.setOnClickListener(this);
     }
 
     /** Called when the activity is about to become visible. */
@@ -76,50 +80,47 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     @Override
     public void onClick(View view) {
         switch (view.getId()){
-            case R.id.btn_level1 :
-                btnLevel1.setVisibility(View.VISIBLE);
-                btnLevel2.setVisibility(View.GONE);
-                btnLevel3.setVisibility(View.GONE);
-                btnLevel4.setVisibility(View.GONE);
-                btnLevel5.setVisibility(View.GONE);
 
-                goToStoryScreen(1);
-                break;
-            case R.id.btn_level2 :
-                btnLevel2.setVisibility(View.VISIBLE);
-                btnLevel1.setVisibility(View.GONE);
-                btnLevel3.setVisibility(View.GONE);
-                btnLevel4.setVisibility(View.GONE);
-                btnLevel5.setVisibility(View.GONE);
-                break;
-            case R.id.btn_level3 :
-                btnLevel3.setVisibility(View.VISIBLE);
-                btnLevel2.setVisibility(View.GONE);
-                btnLevel1.setVisibility(View.GONE);
-                btnLevel4.setVisibility(View.GONE);
-                btnLevel5.setVisibility(View.GONE);
-                break;
-            case R.id.btn_level4 :
-                btnLevel4.setVisibility(View.VISIBLE);
-                btnLevel2.setVisibility(View.GONE);
-                btnLevel3.setVisibility(View.GONE);
-                btnLevel1.setVisibility(View.GONE);
-                btnLevel5.setVisibility(View.GONE);
-                break;
-            case R.id.btn_level5 :
-                btnLevel5.setVisibility(View.VISIBLE);
-                btnLevel2.setVisibility(View.GONE);
-                btnLevel3.setVisibility(View.GONE);
-                btnLevel4.setVisibility(View.GONE);
-                btnLevel1.setVisibility(View.GONE);
-                break;
         }
     }
 
-    public void goToStoryScreen(int level){
+    public void goToStoryScreen(int level) {
         Intent intent = new Intent(mActivity, StoriesActivity.class);
         intent.putExtra("level", level);
         startActivity(intent);
+    }
+
+    @Override
+    public void success (int level){
+        loadAdapter(level);
+    }
+
+
+    public void loadAdapter(int level){
+        progressBar.setVisibility(View.GONE);
+        final int levelCleared = Readathon.getInstance().getPref().getInt(Constants.LEVEL_CLEARED, 0);
+        MainAdapter adapter = new MainAdapter(mActivity, level, levelCleared);
+
+        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(mActivity, 2);
+        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(adapter);
+
+        recyclerView.addOnItemTouchListener(new RecyclerTouchListener(mActivity, recyclerView, new ClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                if(levelCleared == position){
+                    goToStoryScreen(position + 1);
+                } else {
+                    Toast.makeText(mActivity, "Please Clear level " + position, Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+
+            }
+        }));
     }
 
 }

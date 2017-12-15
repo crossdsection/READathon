@@ -2,48 +2,17 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent">
 
-    <Button
+    <ProgressBar
+        android:id="@+id/progressBar"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:text="Level 1"
-        android:id="@+id/btn_level1"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"/>
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
-    <Button
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:visibility="gone"
-        android:text="Level 2"
-        android:id="@+id/btn_level2"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"/>
-
-    <Button
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:visibility="gone"
-        android:text="Level 3"
-        android:id="@+id/btn_level3"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"/>
-
-    <Button
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:visibility="gone"
-        android:text="Level 4"
-        android:id="@+id/btn_level4"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"/>
-
-    <Button
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:visibility="gone"
-        android:text="Level 5"
-        android:id="@+id/btn_level5"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"/>
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:scrollbars="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
 </RelativeLayout>

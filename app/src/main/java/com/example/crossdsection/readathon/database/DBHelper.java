@@ -19,8 +19,11 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+
+import com.example.crossdsection.readathon.model.Answers;
 import com.example.crossdsection.readathon.model.Questiontypes;
 import java.net.URL;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -72,6 +75,7 @@ public class DBHelper extends SQLiteOpenHelper {
             + Contract.Questions.COLUMN_ANSWER_KEYWORD+ TEXT_TYPE + COMMA_SEP
             + Contract.Questions.COLUMN_QUESTION + TEXT_TYPE + COMMA_SEP
             + Contract.Questions.COLUMN_STORY_ID + INTEGER_TYPE + COMMA_SEP
+            + Contract.Questions.COLUMN_QUESTION_ID + INTEGER_TYPE + COMMA_SEP
             + Contract.Questions.COLUMN_QUESTION_TYPE_ID + TEXT_TYPE + COMMA_SEP
             + Contract.Levels.COLUMN_CREATED + TEXT_TYPE + COMMA_SEP
             + Contract.Levels.COLUMN_MODIFIED + TEXT_TYPE + ")";
@@ -83,6 +87,7 @@ public class DBHelper extends SQLiteOpenHelper {
             + Contract.Answers.COLUMN_ANSWER + TEXT_TYPE + COMMA_SEP
             + Contract.Answers.COLUMN_IS_CORRECT + INTEGER_TYPE + COMMA_SEP
             + Contract.Levels.COLUMN_CREATED + TEXT_TYPE + COMMA_SEP
+            + Contract.Answers.COLUMN_STORY_ID + INTEGER_TYPE + COMMA_SEP
             + Contract.Levels.COLUMN_MODIFIED + TEXT_TYPE + ")";
 
     private static  final String SQL_CREATE_SUBMITTED_ANSWER = "create table if not exists "
@@ -90,6 +95,7 @@ public class DBHelper extends SQLiteOpenHelper {
             + Contract.SubmittedAnswers.COLUMN_ID + INTEGER_TYPE + " PRIMARY KEY AUTOINCREMENT" + COMMA_SEP
             + Contract.SubmittedAnswers.COLUMN_USER_ID + INTEGER_TYPE + COMMA_SEP
             + Contract.SubmittedAnswers.COLUMN_QUESTION_ID + INTEGER_TYPE + COMMA_SEP
+            + Contract.SubmittedAnswers.COLUMN_STORY_ID + INTEGER_TYPE + COMMA_SEP
             + Contract.SubmittedAnswers.COLUMN_ANSWER + TEXT_TYPE + COMMA_SEP
             + Contract.SubmittedAnswers.COLUMN_IS_CORRECT + INTEGER_TYPE + COMMA_SEP
             + Contract.Levels.COLUMN_CREATED + TEXT_TYPE + COMMA_SEP
@@ -135,7 +141,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // TODO Auto-generated method stub
         // user levels questiontypes questions answers submitted_answers story_illustration question_illustration
+        db.execSQL("DROP TABLE IF EXISTS " + Contract.Levels.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + Contract.User.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + Contract.Questions.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + Contract.Stories.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + Contract.QuestionTypes.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + Contract.Answers.TABLE_NAME);
@@ -145,6 +153,18 @@ public class DBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    public void deleteTables(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM " + Contract.Levels.TABLE_NAME);
+        db.execSQL("DELETE FROM " + Contract.User.TABLE_NAME);
+        db.execSQL("DELETE FROM " + Contract.Stories.TABLE_NAME);
+        db.execSQL("DELETE FROM " + Contract.QuestionTypes.TABLE_NAME);
+        db.execSQL("DELETE FROM " + Contract.Questions.TABLE_NAME);
+        db.execSQL("DELETE FROM " + Contract.Answers.TABLE_NAME);
+        db.execSQL("DELETE FROM " + Contract.StoryIllustration.TABLE_NAME);
+        db.execSQL("DELETE FROM " + Contract.QuestionIllustration.TABLE_NAME);
+    }
+
     private static String getDateTime() {
         SimpleDateFormat dateFormat = new SimpleDateFormat(
                 "yyyy-MM-dd HH:mm:ss", Locale.getDefault());
@@ -152,38 +172,12 @@ public class DBHelper extends SQLiteOpenHelper {
         return dateFormat.format(date);
     }
 
-    public boolean insertData ( SQLiteDatabase db, String data ) throws JSONException, ParseException {
+    public static boolean insertData ( SQLiteDatabase db, String data ) throws JSONException, ParseException {
 
-        JSONParser parser = new JSONParser();
         JSONObject object = new JSONObject( data );
         JSONObject user = (JSONObject) object.get("user");
         JSONArray questiontypes = (JSONArray) object.get("questiontypes");
         JSONArray contents = (JSONArray) object.get("content");
-
-        ContentValues userValues = new ContentValues();
-        userValues.put( Contract.User.COLUMN_NAME, (String) user.get("name"));
-        userValues.put( Contract.User.COLUMN_SCORE, (Integer) user.get("score"));
-        userValues.put( Contract.User.COLUMN_LEVEL_ID, (Integer) user.get("level_id"));
-        userValues.put( Contract.Levels.COLUMN_CREATED, (String) user.get("created"));
-        userValues.put( Contract.Levels.COLUMN_MODIFIED, (String) user.get("modified"));
-        db.insert(Contract.User.TABLE_NAME, null, userValues );
-
-        ContentValues questionTypeValues = new ContentValues();
-        for ( int i = 0; i < questiontypes.length(); i++ ) {
-            questionTypeValues.put( Contract.QuestionTypes.COLUMN_QUESTION_TYPE, (String)questiontypes.get(i) );
-            questionTypeValues.put( Contract.Levels.COLUMN_CREATED, getDateTime() );
-            questionTypeValues.put( Contract.Levels.COLUMN_MODIFIED, getDateTime() );
-            db.insert( Contract.QuestionTypes.TABLE_NAME, null, questionTypeValues );
-        }
-        Cursor questionData = getData( "questiontypes", 0 );
-        JSONObject questionTypes = new JSONObject();
-        if ( questionData.moveToFirst() ) {
-            do {
-                int id = questionData.getInt(0);
-                String questType = questionData.getString(1);
-                questionTypes.put( questType, id );
-            } while ( questionData.moveToNext() );
-        }
 
         for( int i=0; i < contents.length(); i++ ){
             JSONObject storyObj = contents.getJSONObject(i);
@@ -196,59 +190,122 @@ public class DBHelper extends SQLiteOpenHelper {
             storyValues.put( Contract.Levels.COLUMN_CREATED, getDateTime() );
             storyValues.put( Contract.Levels.COLUMN_MODIFIED, getDateTime());
             db.insert(Contract.Stories.TABLE_NAME, null, storyValues );
-            int storyId = getLastTransactionId( Contract.Stories.TABLE_NAME, Contract.Stories.COLUMN_ID );
 
-            for( int j=0; j < questions.length(); j++ ){
-                JSONObject questionObj = questions.getJSONObject( j );
-                JSONArray answers = (JSONArray) questionObj.get("answers");
+            for(int l=0 ; l<storyIllus.length(); l++){
+                JSONObject storyIllusObject = (JSONObject) storyIllus.get(l);
+                ContentValues storyIllusValues = new ContentValues();
+                storyIllusValues.put(Contract.StoryIllustration.COLUMN_STORY_ID, (int) storyObj.get("level_id"));
+                storyIllusValues.put(Contract.StoryIllustration.COLUMN_LINE_NO, (int) storyIllusObject.get("lineno"));
+                storyIllusValues.put(Contract.StoryIllustration.COLUMN_IMAGE_PATH, (String) storyIllusObject.get("url"));
+                db.insert(Contract.StoryIllustration.TABLE_NAME, null, storyIllusValues);
+            }
 
+            for(int k=0; k< questions.length(); k++){
+                JSONObject questionObject = (JSONObject) questions.get(k);
                 ContentValues questionValues = new ContentValues();
-                String questionType = (String) questionObj.get("questiontype");
-                questionValues.put( Contract.Questions.COLUMN_ANSWER_KEYWORD, (String) questionObj.get("answerkeyword"));
-                questionValues.put( Contract.Questions.COLUMN_QUESTION, (String) questionObj.get("question"));
-                questionValues.put( Contract.Questions.COLUMN_ANSWER_KEYWORD, (String) questionObj.get("answerkeyword"));
-                questionValues.put( Contract.Questions.COLUMN_QUESTION_TYPE_ID, (Integer) questionTypes.get( questionType ));
-                questionValues.put( Contract.Questions.COLUMN_STORY_ID, (Integer) storyId);
-                questionValues.put( Contract.Levels.COLUMN_CREATED, getDateTime() );
-                questionValues.put( Contract.Levels.COLUMN_MODIFIED, getDateTime() );
-                db.insert( Contract.Questions.TABLE_NAME, null, questionValues );
-                int questionId = getLastTransactionId( Contract.Questions.TABLE_NAME, Contract.Questions.COLUMN_ID );
+                questionValues.put(Contract.Questions.COLUMN_STORY_ID, (int) storyObj.get("level_id"));
+                questionValues.put(Contract.Questions.COLUMN_QUESTION_ID, k);
+                questionValues.put(Contract.Questions.COLUMN_QUESTION_TYPE_ID, (String) questionObject.get("questiontype"));
+                questionValues.put(Contract.Questions.COLUMN_QUESTION, (String) questionObject.get("question"));
+                db.insert(Contract.Questions.TABLE_NAME, null, questionValues);
 
-                for( int k = 0; k < answers.length(); k++ ){
-                    JSONObject ansObj = answers.getJSONObject( k );
+                JSONArray answerArr = (JSONArray) questionObject.getJSONArray("answers");
+                JSONArray imageArr = (JSONArray) questionObject.getJSONArray("images");
+
+                for(int j=0; j<answerArr.length(); j++){
+                    JSONObject answerObject = (JSONObject) answerArr.get(j);
                     ContentValues answerValues = new ContentValues();
-                    answerValues.put( Contract.Answers.COLUMN_ANSWER, (String) ansObj.get("answer") );
-                    answerValues.put( Contract.Answers.COLUMN_IS_CORRECT, (Integer) ansObj.get("is_correct") );
-                    answerValues.put( Contract.Answers.COLUMN_QUESTION_ID, (Integer) questionId );
-                    answerValues.put( Contract.Levels.COLUMN_CREATED, getDateTime() );
-                    answerValues.put( Contract.Levels.COLUMN_MODIFIED, getDateTime() );
-                    db.insert( Contract.Answers.TABLE_NAME, null, answerValues );
+                    answerValues.put(Contract.Answers.COLUMN_QUESTION_ID, k);
+                    answerValues.put(Contract.Answers.COLUMN_ANSWER, (String) answerObject.get("answer"));
+                    answerValues.put(Contract.Answers.COLUMN_IS_CORRECT, (int) answerObject.get("is_correct"));
+                    answerValues.put(Contract.Answers.COLUMN_STORY_ID, (int) storyObj.get("level_id"));
+                    db.insert(Contract.Answers.TABLE_NAME, null, answerValues);
                 }
             }
+        }
+
+        ContentValues userValues = new ContentValues();
+        userValues.put( Contract.User.COLUMN_NAME, (String) user.get("name"));
+        userValues.put( Contract.User.COLUMN_SCORE, (Integer) user.get("score"));
+        userValues.put( Contract.User.COLUMN_LEVEL_ID, (Integer) user.get("level_id"));
+        userValues.put( Contract.Levels.COLUMN_CREATED, (String) user.get("created"));
+        userValues.put( Contract.Levels.COLUMN_MODIFIED, (String) user.get("modified"));
+        db.insert(Contract.User.TABLE_NAME, null, userValues );
+
+        ContentValues questionTypeValues = new ContentValues();
+        for (int i = 0; i < questiontypes.length(); i++) {
+            questionTypeValues.put( Contract.QuestionTypes.COLUMN_QUESTION_TYPE, (String)questiontypes.get(i) );
+            questionTypeValues.put( Contract.Levels.COLUMN_CREATED, getDateTime() );
+            questionTypeValues.put( Contract.Levels.COLUMN_MODIFIED, getDateTime() );
+            db.insert(Contract.QuestionTypes.TABLE_NAME, null, questionTypeValues );
         }
         return true;
     }
 
-    public Cursor getData(String tabname, int id) {
+    public Cursor getData(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res = null;
-        if( id == 0 ){
-            res = db.rawQuery("select * from " + tabname, null);
-        } else {
-            res = db.rawQuery("select * from " + tabname + " where level_id = " + id + "", null);
-        }
+        Cursor res =  db.rawQuery( "select * from " + Contract.Stories.TABLE_NAME + " as a"
+                + COMMA_SEP + " " + Contract.StoryIllustration.TABLE_NAME + " as b "
+                + "where a." + Contract.Stories.COLUMN_LEVEL_ID + "=" + id
+                + " and b." + Contract.StoryIllustration.COLUMN_STORY_ID + "=" + id, null );
         return res;
     }
 
-    public int getLastTransactionId( String tablename, String primarykey ) {
-        int _id = 0;
+    public Cursor getQuestions(int id){
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + tablename + " ORDER BY " + primarykey + " DESC LIMIT 1 ", null );
-        if (cursor.moveToLast()) {
-            _id = cursor.getInt(0);
+        String query = "select * from " + Contract.Questions.TABLE_NAME
+                + " where " + Contract.Questions.COLUMN_STORY_ID + "=" + id;
+        Cursor cursor = db.rawQuery(query, null);
+
+        return cursor;
+    }
+
+    public List<Answers> getAnswers(int questionId, int storyId){
+        List<Answers> answersList = new ArrayList<>();
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "select * from " + Contract.Answers.TABLE_NAME + " where "
+                + Contract.Answers.COLUMN_STORY_ID + "=" + storyId + " and "
+                + Contract.Answers.COLUMN_QUESTION_ID + "=" + questionId;
+
+        Cursor cursor = db.rawQuery(query, null);
+        while(cursor != null && cursor.moveToNext()){
+            Answers answers = new Answers();
+            answers.setQuestionId(questionId);
+            answers.setStoryId(questionId);
+            answers.setIsCorrect(cursor.getInt(cursor.getColumnIndex(Contract.Answers.COLUMN_IS_CORRECT)));
+            answers.setAnswer(cursor.getString(cursor.getColumnIndex(Contract.Answers.COLUMN_ANSWER)));
+            answersList.add(answers);
         }
-        cursor.close();
-        db.close();
-        return _id;
+
+        return answersList;
+    }
+
+    public void submitAnswer(int questionId, int storyId, int isCorrect, String answer){
+        String query = "select * from " + Contract.SubmittedAnswers.TABLE_NAME + " where "
+                + Contract.SubmittedAnswers.COLUMN_QUESTION_ID + "=" + questionId + " and "
+                + Contract.SubmittedAnswers.COLUMN_STORY_ID + "=" + storyId;
+
+        Cursor cursor = this.getReadableDatabase().rawQuery(query, null);
+        ContentValues values = new ContentValues();
+        values.put(Contract.SubmittedAnswers.COLUMN_IS_CORRECT, isCorrect);
+        values.put(Contract.SubmittedAnswers.COLUMN_USER_ID, 0);
+        values.put(Contract.SubmittedAnswers.COLUMN_QUESTION_ID, questionId);
+        values.put(Contract.SubmittedAnswers.COLUMN_ANSWER, answer);
+        values.put(Contract.SubmittedAnswers.COLUMN_STORY_ID, storyId);
+        if(cursor != null && cursor.getCount() > 0){
+            String where = Contract.SubmittedAnswers.COLUMN_QUESTION_ID + "= ? and "
+                    + Contract.SubmittedAnswers.COLUMN_STORY_ID + "= ?";
+            this.getWritableDatabase().update(Contract.SubmittedAnswers.TABLE_NAME, values, where, new String[]{String.valueOf(questionId), String.valueOf(storyId)});
+        } else {
+            this.getWritableDatabase().insert(Contract.SubmittedAnswers.TABLE_NAME, null, values);
+        }
+    }
+
+    public int getResult(int level){
+        String query = "select count(" + Contract.SubmittedAnswers.COLUMN_IS_CORRECT
+                + ") from " + Contract.SubmittedAnswers.TABLE_NAME
+                + " where " + Contract.SubmittedAnswers.COLUMN_STORY_ID + "=" + level;
+        Cursor cursor = this.getWritableDatabase().rawQuery(query, null);
+        return  cursor != null ? cursor.getCount() : 0;
     }
 }

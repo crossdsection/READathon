@@ -11,8 +11,11 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import com.example.crossdsection.readathon.database.DBHelper;
+import com.example.crossdsection.readathon.listeners.Listener_Success;
+
 import static com.android.volley.Request.Method.GET;
 import static com.example.crossdsection.readathon.constant.ConstantApi.getStories;
 
@@ -25,10 +28,11 @@ public class ApiGetStories {
     private String  strUrl = getStories;
     private Context mContext;
     private final String TAG = "ApiGetStories";
+    private Listener_Success callback;
 
-
-    public ApiGetStories(Context mContext, SQLiteDatabase db ){
+    public ApiGetStories(Context mContext, Listener_Success callback){
         this.mContext = mContext;
+        this.callback = callback;
     }
 
     //get Stories from server
@@ -38,6 +42,9 @@ public class ApiGetStories {
                 @Override
                 public void onResponse(JSONObject response) {
                     try {
+                        JSONObject object = new JSONObject(response.toString());
+                        JSONArray contents = (JSONArray) object.get("content");
+                        callback.success(contents.length());
                         DBHelper obj = new DBHelper( mContext );
                         obj.insertData( db, response.toString() );
                     } catch (Exception e) {

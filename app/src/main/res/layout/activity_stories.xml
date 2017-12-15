@@ -5,14 +5,19 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <TextView
-        android:layout_above="@+id/questionBtn"
         android:textStyle="bold"
         android:padding="10dp"
         android:textSize="16dp"
         android:textColor="@android:color/black"
         android:id="@+id/storyTv"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content" />
+
+    <ImageView
+        android:layout_below="@+id/storyTv"
+        android:id="@+id/storyIv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <Button
         android:layout_alignParentBottom="true"
