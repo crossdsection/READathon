@@ -1,16 +1,12 @@
 package com.example.crossdsection.readathon.adapters;
 
 import android.content.Context;
-import android.icu.text.BreakIterator;
 import android.support.v7.widget.RecyclerView;
-import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextPaint;
 import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +23,6 @@ import com.example.crossdsection.readathon.model.Questions;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by chitra on 14/12/17.
@@ -64,8 +59,7 @@ public class QuestionAdapter extends  RecyclerView.Adapter<QuestionAdapter.Quest
 
         String question = questions.getQuestion();
 
-        holder.questionTv.setMovementMethod(LinkMovementMethod.getInstance());
-        holder.questionTv.setText(question, TextView.BufferType.SPANNABLE);
+        holder.questionTv.setText(question);
 
         holder.optionRb1.setText(answersList.get(0).getAnswer());
         holder.optionRb1.setTag(answersList.get(0).getIsCorrect());
@@ -112,6 +106,16 @@ public class QuestionAdapter extends  RecyclerView.Adapter<QuestionAdapter.Quest
                 }
             }
         });
+
+        holder.questionTv.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                String text = ((TextView) view).getText().toString();
+                Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        });
+
 
     }
 
