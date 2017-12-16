@@ -1,22 +1,33 @@
 package com.example.crossdsection.readathon.adapters;
 
 import android.content.Context;
+import android.icu.text.BreakIterator;
 import android.support.v7.widget.RecyclerView;
+import android.text.Layout;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.TextPaint;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.crossdsection.readathon.R;
+import com.example.crossdsection.readathon.listeners.Listener_Speak;
 import com.example.crossdsection.readathon.listeners.Listener_SubmitAnswers;
 import com.example.crossdsection.readathon.model.Answers;
 import com.example.crossdsection.readathon.model.Questions;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by chitra on 14/12/17.
@@ -28,13 +39,16 @@ public class QuestionAdapter extends  RecyclerView.Adapter<QuestionAdapter.Quest
     List<Questions> questionsList;
     HashMap<Integer, List<Answers>> answerMap;
     Listener_SubmitAnswers callback;
+    Listener_Speak speakCallback;
 
     public QuestionAdapter(Context context, List<Questions> questionsList,
-                           HashMap<Integer, List<Answers>> answerMap, Listener_SubmitAnswers callback){
+                           HashMap<Integer, List<Answers>> answerMap
+            , Listener_SubmitAnswers callback, Listener_Speak speakCallback){
         this.context = context;
         this.questionsList = questionsList;
         this.answerMap = answerMap;
         this.callback = callback;
+        this.speakCallback = speakCallback;
     }
 
     @Override
@@ -48,7 +62,10 @@ public class QuestionAdapter extends  RecyclerView.Adapter<QuestionAdapter.Quest
         final Questions questions = questionsList.get(position);
         List<Answers> answersList = answerMap.get(questions.getQuestionId());
 
-        holder.questionTv.setText(questions.getQuestion());
+        String question = questions.getQuestion();
+
+        holder.questionTv.setMovementMethod(LinkMovementMethod.getInstance());
+        holder.questionTv.setText(question, TextView.BufferType.SPANNABLE);
 
         holder.optionRb1.setText(answersList.get(0).getAnswer());
         holder.optionRb1.setTag(answersList.get(0).getIsCorrect());
@@ -90,10 +107,12 @@ public class QuestionAdapter extends  RecyclerView.Adapter<QuestionAdapter.Quest
                 }
 
                 if(!TextUtils.isEmpty(answer)){
+                    speakCallback.speak(answer);
                     callback.submitAnswer(questions.getQuestionId(), answer, isCorrect);
                 }
             }
         });
+
     }
 
     @Override

@@ -27,6 +27,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     DBHelper db;
     ProgressBar progressBar;
     RecyclerView recyclerView;
+    int levelCleared;
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -37,7 +38,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 //        Stetho.initializeWithDefaults(this);
         progressBar = findViewById(R.id.progressBar);
         recyclerView = findViewById(R.id.recyclerView);
-
+        levelCleared = Readathon.getInstance().getPref().getInt(Constants.LEVEL_CLEARED, 0);
         db = new DBHelper(getApplicationContext());
         db.getWritableDatabase();
         db.deleteTables();
@@ -98,7 +99,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     public void loadAdapter(int level){
         progressBar.setVisibility(View.GONE);
-        final int levelCleared = Readathon.getInstance().getPref().getInt(Constants.LEVEL_CLEARED, 0);
         MainAdapter adapter = new MainAdapter(mActivity, level, levelCleared);
 
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(mActivity, 2);
@@ -109,7 +109,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         recyclerView.addOnItemTouchListener(new RecyclerTouchListener(mActivity, recyclerView, new ClickListener() {
             @Override
             public void onClick(View view, int position) {
-                if(levelCleared == position){
+                if(levelCleared >= position){
                     goToStoryScreen(position + 1);
                 } else {
                     Toast.makeText(mActivity, "Please Clear level " + position, Toast.LENGTH_SHORT).show();

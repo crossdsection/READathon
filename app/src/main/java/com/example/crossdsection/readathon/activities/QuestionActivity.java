@@ -1,13 +1,17 @@
 package com.example.crossdsection.readathon.activities;
 
 import android.database.Cursor;
+import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.crossdsection.readathon.R;
@@ -16,6 +20,7 @@ import com.example.crossdsection.readathon.adapters.QuestionAdapter;
 import com.example.crossdsection.readathon.constant.Constants;
 import com.example.crossdsection.readathon.database.Contract;
 import com.example.crossdsection.readathon.database.DBHelper;
+import com.example.crossdsection.readathon.listeners.Listener_Speak;
 import com.example.crossdsection.readathon.listeners.Listener_SubmitAnswers;
 import com.example.crossdsection.readathon.model.Answers;
 import com.example.crossdsection.readathon.model.Questions;
@@ -24,8 +29,10 @@ import com.example.crossdsection.readathon.util.Utils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
-public class QuestionActivity extends BaseActivity implements View.OnClickListener, Listener_SubmitAnswers {
+public class QuestionActivity extends BaseActivity implements View.OnClickListener
+        , Listener_SubmitAnswers, Listener_Speak , TextToSpeech.OnInitListener{
 
     RecyclerView recyclerView;
     Button submitAnswersBtn;
@@ -36,6 +43,9 @@ public class QuestionActivity extends BaseActivity implements View.OnClickListen
     List<Questions> questionsList;
     HashMap<Integer, List<Answers>> answerMap;
     QuestionAdapter adapter;
+    TextToSpeech tts;
+    String wordToSpeak;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +56,7 @@ public class QuestionActivity extends BaseActivity implements View.OnClickListen
         recyclerView = findViewById(R.id.recyclerView);
         submitAnswersBtn = findViewById(R.id.submitAnswersBtn);
         submitAnswersBtn.setOnClickListener(this);
+
 
         db = new DBHelper(mActivity);
         Cursor cursor = db.getQuestions(level);
@@ -64,13 +75,21 @@ public class QuestionActivity extends BaseActivity implements View.OnClickListen
             answerMap.put(questions.getQuestionId(), answersList);
         }
 
-        adapter = new QuestionAdapter(mActivity, questionsList, answerMap, this);
+        adapter = new QuestionAdapter(mActivity, questionsList, answerMap, this, this);
 
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(mActivity);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(tts != null) {
+            tts.shutdown();
+        }
     }
 
     @Override
@@ -91,5 +110,27 @@ public class QuestionActivity extends BaseActivity implements View.OnClickListen
     @Override
     public void submitAnswer(int questionId, String answer, int isCorrect) {
         db.submitAnswer(questionId, level, isCorrect, answer);
+    }
+
+    @Override
+    public void speak(String word) {
+        wordToSpeak = word;
+        tts = new TextToSpeech(mActivity, this);
+    }
+
+    @Override
+    public void onInit(int status) {
+        if (!TextUtils.isEmpty(wordToSpeak) && status == TextToSpeech.SUCCESS && tts != null){
+            int result = tts.setLanguage(Locale.US);
+
+            if(result == TextToSpeech.LANG_MISSING_DATA ||
+                    result == TextToSpeech.LANG_NOT_SUPPORTED){
+                Log.e("QuestionActivity", "Language not supported or Missing Data");
+            } else {
+                tts.speak(wordToSpeak, TextToSpeech.QUEUE_FLUSH, null, "");
+            }
+
+            wordToSpeak = "";
+        }
     }
 }
