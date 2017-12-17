@@ -244,10 +244,12 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public Cursor getData(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res =  db.rawQuery( "select * from " + Contract.Stories.TABLE_NAME + " as a"
+        String query = "select * from " + Contract.Stories.TABLE_NAME + " as a"
                 + COMMA_SEP + " " + Contract.StoryIllustration.TABLE_NAME + " as b "
                 + "where a." + Contract.Stories.COLUMN_LEVEL_ID + "=" + id
-                + " and b." + Contract.StoryIllustration.COLUMN_STORY_ID + "=" + id, null );
+                + " and b." + Contract.StoryIllustration.COLUMN_STORY_ID + "=" + id;
+        Cursor res =  db.rawQuery( query, null );
+        Log.d("query", query);
         return res;
     }
 

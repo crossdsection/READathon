@@ -115,7 +115,9 @@ public class QuestionActivity extends BaseActivity implements View.OnClickListen
     @Override
     public void speak(String word) {
         wordToSpeak = word;
-        tts = new TextToSpeech(mActivity, this);
+        if(!TextUtils.isEmpty(word)) {
+            tts = new TextToSpeech(mActivity, this);
+        }
     }
 
     @Override
