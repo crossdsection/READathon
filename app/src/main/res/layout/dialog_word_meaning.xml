@@ -4,12 +4,16 @@
     android:layout_height="match_parent">
 
     <TextView
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
         android:padding="10dp"
         android:id="@+id/definationTv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
     <TextView
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
         android:visibility="gone"
         android:padding="10dp"
         android:id="@+id/domainTv"
@@ -18,6 +22,8 @@
         android:layout_height="wrap_content" />
 
     <TextView
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
         android:padding="10dp"
         android:id="@+id/exampleTv"
         android:layout_below="@+id/domainTv"

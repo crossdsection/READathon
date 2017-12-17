@@ -1,9 +1,11 @@
 package com.example.crossdsection.readathon.activities;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -58,6 +60,8 @@ public class StoriesActivity extends BaseActivity implements View.OnClickListene
     Button questionBtn;
     ProgressBar progressBar;
 
+    String copiedWord;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,7 +109,7 @@ public class StoriesActivity extends BaseActivity implements View.OnClickListene
                 ClipData.Item item = clipBoard.getPrimaryClip().getItemAt(0);
                 String data =  item.getText().toString();
                 if(!TextUtils.isEmpty(data)){
-                    progressBar.setVisibility(View.VISIBLE);
+                    copiedWord = data;
                     getMeaningOfWord(data);
                 }
             }
@@ -132,7 +136,7 @@ public class StoriesActivity extends BaseActivity implements View.OnClickListene
 
         TextView definationTv = dialog.findViewById(R.id.definationTv);
         if(!TextUtils.isEmpty(defination)) {
-            definationTv.setText("Defination : \n" + defination);
+            definationTv.setText(copiedWord + "\nDefination : \n" + defination);
         }
 
         TextView domainTv = dialog.findViewById(R.id.domainTv);
@@ -146,7 +150,33 @@ public class StoriesActivity extends BaseActivity implements View.OnClickListene
             exampleTv.setText("Example : \n" + example);
         }
 
-        dialog.show();
+        if(!isFinishing()) {
+            dialog.show();
+        }
+
+    }
+
+    public void showAlertDialog(){
+        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(mActivity);
+        alertDialog.setMessage(copiedWord + " is not found. Do you want to search "
+                + copiedWord.substring(0, copiedWord.length()-1));
+        alertDialog.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                copiedWord = copiedWord.substring(0, copiedWord.length()-1);
+                getMeaningOfWord(copiedWord.substring(0, copiedWord.length()-1));
+                dialogInterface.dismiss();
+            }
+        });
+
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+
+        alertDialog.show();
 
     }
 
@@ -158,6 +188,12 @@ public class StoriesActivity extends BaseActivity implements View.OnClickListene
     }
 
     private class CallbackTask extends AsyncTask<String, Integer, String> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressBar.setVisibility(View.VISIBLE);
+        }
 
         @Override
         protected String doInBackground(String... params) {
@@ -220,7 +256,12 @@ public class StoriesActivity extends BaseActivity implements View.OnClickListene
             }
             progressBar.setVisibility(View.GONE);
             //System.out.println(result);
-            showDialog(defination, domains, examples);
+
+            if(!TextUtils.isEmpty(defination)) {
+                showDialog(defination, domains, examples);
+            } else {
+                showAlertDialog();
+            }
         }
     }
 }
